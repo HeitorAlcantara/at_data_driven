@@ -13,6 +13,4 @@ def get_matches(competition_id: int, season_id: int) -> str:
     )
 
 def get_raw_data_match(match_id: int) -> str:
-    return json.dumps(
-        sb.events(match_id=match_id).to_dict(orient='records')
-    )
+    return sb.events(match_id=match_id)
