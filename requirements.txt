@@ -9,3 +9,5 @@ matplotlib
 wikipedia
 pydantic
 uvicorn
+httpie
+pandas

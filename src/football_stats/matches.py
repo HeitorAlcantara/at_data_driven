@@ -63,6 +63,9 @@ def get_player_stats(match_id, player_name) -> str:
 
         # Filter events for the specific player
         player_events = events[events['player'] == player_name]
+        # st.write(player_events)
+        # st.write(player_events['minute'].max())
+
         
         # Check if the player is present in the events
         if player_events.empty:
@@ -74,14 +77,20 @@ def get_player_stats(match_id, player_name) -> str:
             "passes_attempted": player_events[player_events['type'] == 'Pass'].shape[0],
             "shots": player_events[player_events['type'] == 'Shot'].shape[0],
             "shots_on_target": player_events[(player_events['type'] == 'Shot') & (player_events['shot_outcome'] == 'On Target')].shape[0],
+            "shots_blocked": player_events[(player_events['type'] == 'Shot') & (player_events['shot_outcome'] == 'Blocked')].shape[0],
+            "goals": player_events[(player_events['type'] == 'Shot') & (player_events['shot_outcome'] == 'Goal')].shape[0],
+            "penalty_goals": player_events[(player_events['type'] == 'Shot') & (player_events['shot_outcome'] == 'Goal') & (player_events['shot_type'] == 'Penalty')].shape[0],
             "fouls_committed": player_events[player_events['type'] == 'Foul Committed'].shape[0],
+            "yellow_card": player_events[(player_events['type'] == 'Foul Committed') & (player_events['foul_committed_card'] == 'Yellow Card')].shape[0],
+            "red_card": player_events[(player_events['type'] == 'Foul Committed') & (player_events['foul_committed_card'] == 'Red Card')].shape[0],
             "fouls_won": player_events[player_events['type'] == 'Foul Won'].shape[0],
             "tackles": player_events[player_events['type'] == 'Tackle'].shape[0],
             "interceptions": player_events[player_events['type'] == 'Interception'].shape[0],
             "dribbles_successful": player_events[(player_events['type'] == 'Dribble') & (player_events['dribble_outcome'] == 'Complete')].shape[0],
             "dribbles_attempted": player_events[player_events['type'] == 'Dribble'].shape[0],
+            "minutes_played": int(player_events['minute'].max())
         }
-        
+        # st.write(stats)
     except PlayerStatsError as e:
         # Propagate the error message
         raise PlayerStatsError(e.message)
@@ -90,3 +99,6 @@ def get_player_stats(match_id, player_name) -> str:
         raise PlayerStatsError(f"An unexpected error occurred: {str(e)}")
     
     return to_json(stats)
+
+
+# get_player_stats(3869685, "Lionel Andrés Messi Cuccittini")
