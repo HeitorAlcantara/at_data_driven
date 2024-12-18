@@ -19,7 +19,7 @@ import pandas as pd
 load_dotenv()
 
 
-def summarization_match_details(match_id: int):
+def summarization_match_details(match_id: int, info: list):
     """
     Get the details of a specific match using the match ID.
     Args:
@@ -30,10 +30,14 @@ def summarization_match_details(match_id: int):
     """
 
     match_id = match_id
+    team_score = info
 
     line_up = json.loads(get_lineups(match_id))
-    home_team = list(line_up.keys())[0]
-    away_team = list(line_up.keys())[1]
+    home_team = team_score[0][0]
+    away_team = team_score[1][0]
+
+    home_score = team_score[0][1]
+    away_score = team_score[1][1]
 
     # print(home_team)
 
@@ -77,6 +81,14 @@ def summarization_match_details(match_id: int):
         The match details are provided by the stats of each player in a team as a JSON.
         The first key is the name of the Team, followed by the player and it stats
 
+        The score of the match is represented by HOME_SCORE and AWAY_SCORE:
+        
+        ## HOME_SCORE
+        {home_score}
+
+        ## AWAY_SCORE
+        {away_score}
+
         ## EXAMPLE
         {{
             'Real Madrid': {{
@@ -84,15 +96,15 @@ def summarization_match_details(match_id: int):
             }}
         }}
 
-        Here's the JSON data of TEAM A and TEAM B:
+        Here's the JSON data of HOME_TEAM and AWAY_TEAM:
 
-        ## TEAM A 
+        ## HOME_TEAM 
         {json_home_player_stats}
 
-        ## TEAM B
+        ## AWAY_TEAM
         {json_away_player_stats}
 
-        With that information, you are able to tell which team won the match
+        With that information, you are able to tell which team won the match or if the match draw.
         Who were the most important players on the match
         The output should be a simple analysis of the match, em Português:
 

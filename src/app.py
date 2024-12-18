@@ -140,8 +140,10 @@ with match_events:
     st.markdown(f'* :stadium: : {match_details["stadium"]}')
     st.markdown(f'* :male-judge: : {match_details["referee"]}')
     st.markdown(f'* Competition Stage : {match_details["competition_stage"]}')
+
+    team_score = [(match_details['home_team'], match_details['home_score']), (match_details['away_team'], match_details['away_score'])]
     with st.container(border=True):
-        st.write(summarization_match_details(match_id=match_id))
+        st.write(summarization_match_details(match_id=match_id, info=team_score))
 
     home_team, away_team = st.columns(2)
     with home_team:

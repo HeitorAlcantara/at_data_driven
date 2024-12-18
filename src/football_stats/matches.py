@@ -75,6 +75,7 @@ def get_player_stats(match_id, player_name) -> str:
         stats = {
             "passes_completed": player_events[(player_events['type'] == 'Pass') & (player_events['pass_outcome'].isna())].shape[0],
             "passes_attempted": player_events[player_events['type'] == 'Pass'].shape[0],
+            "pass_goal_assist": player_events[(player_events['type'] == 'Pass') & (player_events['pass_goal_assist'] == True)].shape[0],
             "shots": player_events[player_events['type'] == 'Shot'].shape[0],
             "shots_on_target": player_events[(player_events['type'] == 'Shot') & (player_events['shot_outcome'] == 'On Target')].shape[0],
             "shots_blocked": player_events[(player_events['type'] == 'Shot') & (player_events['shot_outcome'] == 'Blocked')].shape[0],
@@ -101,4 +102,4 @@ def get_player_stats(match_id, player_name) -> str:
     return to_json(stats)
 
 
-# get_player_stats(3869685, "Lionel Andrés Messi Cuccittini")
+# get_player_stats(3869685, "Alexis Mac Allister")
