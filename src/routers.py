@@ -5,7 +5,7 @@ import json
 
 from football_stats.matches import get_player_stats
 from football_stats.competitions import get_matches
-from football import summarization_match_details
+from football_llm_data import summarization_match_details
 
 match_summary_router = APIRouter()
 player_profile_router = APIRouter()

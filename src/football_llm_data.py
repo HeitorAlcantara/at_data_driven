@@ -1,29 +1,24 @@
-from langchain.tools import tool
-from langchain.chains import LLMChain
 from langchain_google_genai import GoogleGenerativeAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from dotenv import load_dotenv
 
-import streamlit as st
+# import streamlit as st
 
 from football_stats.matches import get_player_stats
 from football_stats.matches import get_lineups
-from football_stats.competitions import get_matches
-from football_stats.competitions import get_competitions
-from football_stats.matches import get_events
+# from football_stats.competitions import get_matches
+# from football_stats.competitions import get_competitions
+# from football_stats.matches import get_events
 import json
-import yaml
-import pandas as pd
 
 load_dotenv()
 
 
-def summarization_match_details(match_id: int, info: list):
+def summarization_match_details(match_id: int, info: list) -> str:
     """
-    Get the details of a specific match using the match ID.
+    Summarize the details of a specific match using the match ID.
     Args:
         match_id (int): The unique identifier of the match.
+        info (list): A list of tuple containing team and score (home and away)
         
     Returns:
         str: The details of the match.
@@ -113,8 +108,6 @@ def summarization_match_details(match_id: int, info: list):
         
     """
     llm = GoogleGenerativeAI(model="gemini-1.5-flash")
-    # input_variables = ["raw_data_match"]
-    # prompt = PromptTemplate.from_template(agent_prompt)
     response = llm.invoke(agent_prompt)
 
     return response

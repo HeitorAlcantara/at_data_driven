@@ -1,17 +1,24 @@
 import streamlit as st
+
 from football_stats.competitions import get_competitions, get_matches, get_raw_data_match
-from football_stats.matches import get_lineups, get_events, get_player_stats
-from football import summarization_match_details
+from football_stats.matches import get_lineups, get_player_stats
+from football_llm_data import summarization_match_details
+
 from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain.schema import AIMessage, HumanMessage
-
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
+
+from tools.football import get_sport_specialist_comments_about_match as comments_about_a_match
+from tools import load_tools
+
+from agent import load_agent
+
 import json
 
 
 st.set_page_config(layout="wide",
-                   page_title="Football Match Conversation App",
+                   page_title="Football Analysis App",
                    page_icon="⚽️")
 
 msgs = StreamlitChatMessageHistory()
@@ -76,6 +83,7 @@ selected_match = None
 match_id = None
 match_details = None
 specialist_comments = None
+tone_narrative = None
 
 st.sidebar.header("Step 1: Select a Competition")
 competitions = load_competitions()
@@ -119,6 +127,7 @@ if selected_season:
 
 match_events, narratives = st.tabs(['Match Events', 'Narratives'])
 
+# Match Events Window
 with match_events:
     st.markdown(
     """
@@ -158,11 +167,8 @@ with match_events:
         st.metric(label="Away team", value=match_details['away_score'])
 
 
-    # match = get_raw_data_match(match_id)
-    st.write(match_id)
-
     line_up = load_line_up(match_id=match_id)
-    st.write(match_details)
+    # Home Players and it stats
     with home_team:
         # st.write(match_details)
         home_team_players = sorted(set(comp["player_name"] for comp in line_up[match_details['home_team']]))
@@ -176,6 +182,7 @@ with match_events:
             except:
                 st.write("Please select other player. No Events found for this player")
 
+    # Home Players and it stats
     with away_team:
         away_team_players = sorted(set(comp["player_name"] for comp in line_up[match_details['away_team']]))
         selected_away_team_player = st.selectbox("Choose a away team player", away_team_players)
@@ -187,3 +194,67 @@ with match_events:
                 st.write(player_stats)
             except Exception as e:
                 st.write("Please select other player. No Events found for this player")
+
+
+
+with narratives:
+    st.title("Football Match Conversation")
+    st.write("Select the type of tone your specialist will use!")
+    tones = ["Formal", "Humorous", "Tecnical"]
+    selected_tone = st.selectbox("Narrive Tone", tones)
+
+    with st.container(border=False):
+        st.chat_input(key="user_input", on_submit=memorize_message) 
+        if user_input := st.session_state.user_input:
+            chat_history = st.session_state["memory"].chat_memory.messages
+            for msg in chat_history:
+                if isinstance(msg, HumanMessage):
+                    with st.chat_message("user"):
+                        st.write(f"{msg.content}")
+                elif isinstance(msg, AIMessage):
+                    with st.chat_message("assistant"):
+                        st.write(f"{msg.content}")
+                        
+            with st.spinner("Agent is responding..."):
+                try:
+                    # Load agent
+                    agent = load_agent()
+                    
+                    # Cache tools to avoid redundant calls
+                    tools = load_tools()
+                    tool_names = [tool.name for tool in tools]
+                    tool_descriptions = [tool.description for tool in tools]
+
+                    # Prepare input for the agent
+                    input_data = {
+                        "match_id": match_id,
+                        "match_name": selected_match,
+                        "tone_narrative": selected_tone,
+                        "input": user_input,
+                        "agent_scratchpad": "",
+                        "competition_id": competition_id,
+                        "season_id": season_id,
+                        "tool_names": tool_names,
+                        "tools": tool_descriptions,
+                    }
+
+                    # Invoke agent
+                    response = agent.invoke(input=input_data, handle_parsing_errors=True)
+
+                    # Validate response
+                    if isinstance(response, dict) and "output" in response:
+                        output = response.get("output")
+                    else:
+                        output = "Sorry, I couldn't understand your request. Please try again."
+
+                    # Add response to chat memory
+                    st.session_state["memory"].chat_memory.add_message(AIMessage(content=output))
+
+                    # Display response in chat
+                    with st.chat_message("assistant"):
+                        st.write(output)
+
+                except Exception as e:
+                    # Handle and display errors gracefully
+                    st.error(f"Error during agent execution: {str(e)}")
+                    st.write("Ensure that your inputs and agent configuration are correct.")
