@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import json
 
 class Match(BaseModel):
@@ -9,4 +9,3 @@ class Match(BaseModel):
 class Player(BaseModel):
     name: str
     match_id: int
-    stats: Dict[str, Any]
